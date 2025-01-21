@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,99 +11,115 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      String   @default("customer")
-  createdAt DateTime @default(now())
-  vehicles  Vehicle[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  email        String           @unique
+  password     String
+  role         String           @default("customer")
+  createdAt    DateTime         @default(now())
+  vehicles     Vehicle[]
   appointments Appointment[]
-  payments  Payment[]
-  reviews   Review[]
-  adminLogs AdminLog[]
+  payments     Payment[]
+  reviews      Review[]
+  bookings     BookingService[] // Reverse relation to BookingService
+  adminLogs    AdminLog[]
 }
 
 model Service {
-  id          Int          @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  description  String
+  price        Float
+  category     ServiceCategory  @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  bookings     BookingService[] // Reverse relation to BookingService
+  appointments Appointment[]    @relation("ServiceAppointment")
+  reviews      Review[]         @relation("ServiceReview")
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model ServiceCategory {
+  id          Int              @id @default(autoincrement())
   name        String
   description String
-  price       Float
-  createdAt   DateTime     @default(now())
-  appointments Appointment[]
-  reviews     Review[]
+  services    Service[]
+  createdAt   DateTime         @default(now())
+  bookings    BookingService[] // Reverse relation to BookingService
+}
+
+model BookingService {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  serviceId   Int
+  categoryId  Int
+  description String?
+  bookedDate  DateTime
+  status      String          @default("Pending")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt()
+  user        User            @relation(fields: [userId], references: [id])
+  service     Service         @relation(fields: [serviceId], references: [id])
+  category    ServiceCategory @relation(fields: [categoryId], references: [id])
 }
 
 model Appointment {
-  id            Int        @id @default(autoincrement())
-  userId        Int
-  serviceId     Int
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  serviceId       Int
   appointmentDate DateTime
-  status        String     @default("pending")
-  createdAt     DateTime   @default(now())
-  user          User       @relation(fields: [userId], references: [id])
-  service       Service    @relation(fields: [serviceId], references: [id])
-  payments      Payment[]  @relation("AppointmentPayment") // Payment has a relation to Appointment
+  status          String    @default("pending")
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id])
+  service         Service   @relation("ServiceAppointment", fields: [serviceId], references: [id])
+  payments        Payment[] @relation("AppointmentPayment")
 }
 
 model Payment {
-  id            Int        @id @default(autoincrement())
+  id            Int                  @id @default(autoincrement())
   userId        Int
   appointmentId Int
   amount        Float
   paymentMethod String
-  paymentStatus String     @default("pending")
+  paymentStatus String               @default("pending")
   paymentDate   DateTime
-  createdAt     DateTime   @default(now())
-  user          User       @relation(fields: [userId], references: [id])
-  appointment   Appointment @relation("AppointmentPayment", fields: [appointmentId], references: [id]) // Establish the opposite relation
-  transactions  PaymentTransaction[] // Add transactions as related to Payment
+  createdAt     DateTime             @default(now())
+  user          User                 @relation(fields: [userId], references: [id])
+  appointment   Appointment          @relation("AppointmentPayment", fields: [appointmentId], references: [id])
+  transactions  PaymentTransaction[]
 }
 
-
 model Vehicle {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  make          String
-  model         String
-  year          Int
-  licensePlate  String
-  createdAt     DateTime @default(now())
-
-  owner         User     @relation(fields: [userId], references: [id])
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  make         String
+  model        String
+  year         Int
+  licensePlate String
+  createdAt    DateTime @default(now())
+  owner        User     @relation(fields: [userId], references: [id])
 }
 
 model Review {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  serviceId   Int
-  rating      Int     
-  comment     String?
-  createdAt   DateTime @default(now())
-
-  user        User     @relation(fields: [userId], references: [id])
-  service     Service  @relation(fields: [serviceId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  serviceId Int
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  service   Service  @relation("ServiceReview", fields: [serviceId], references: [id])
 }
 
 model PaymentTransaction {
-  id               Int        @id @default(autoincrement())
-  paymentId        Int
-  transactionId    String
-  paymentStatus    String
-  createdAt        DateTime   @default(now())
-  payment          Payment    @relation(fields: [paymentId], references: [id])
+  id            Int      @id @default(autoincrement())
+  paymentId     Int
+  transactionId String
+  paymentStatus String
+  createdAt     DateTime @default(now())
+  payment       Payment  @relation(fields: [paymentId], references: [id])
 
   @@map("payment_transactions")
-}
-
-
-
-
-model ServiceCategory {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  createdAt   DateTime @default(now())
 }
 
 model AdminLog {
@@ -115,6 +128,5 @@ model AdminLog {
   action      String
   description String
   createdAt   DateTime @default(now())
-
   admin       User     @relation(fields: [adminId], references: [id])
 }

@@ -1,6 +1,6 @@
 import express from "express";
 import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} from "../controllers/users";
-import { createBooking, deleteService, GetAllServiceCategory, getAllServices, getServiceById, postService, postServiceCategory, updateBooking, updateService } from "../controllers/service";
+import { createBooking, deleteService, GetAllServiceCategory, getAllServices, getBookingById, getServiceById, postService, postServiceCategory, updateBooking, updateService } from "../controllers/service";
 
 const routes = express.Router();
 
@@ -24,6 +24,8 @@ routes.patch('/:id/service', updateService);
 routes.delete('/:id/service', deleteService);
 //booking
 routes.post('/booking', createBooking);
+routes.get('/:id/booking', getBookingById);
 routes.patch("/:id/booking", updateBooking);
+
 
 export default routes;

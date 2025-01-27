@@ -67,7 +67,7 @@ model Appointment {
   id              Int       @id @default(autoincrement())
   userId          Int
   serviceId       Int
-  appointmentDate DateTime
+  bookedDate      DateTime
   status          String    @default("pending")
   createdAt       DateTime  @default(now())
   user            User      @relation(fields: [userId], references: [id])
@@ -91,11 +91,11 @@ model Payment {
 
 model Vehicle {
   id           Int      @id @default(autoincrement())
+  licensePlate String   @unique
   userId       Int
   make         String
   model        String
-  year         Int
-  licensePlate String
+  year         String
   createdAt    DateTime @default(now())
   owner        User     @relation(fields: [userId], references: [id])
 }

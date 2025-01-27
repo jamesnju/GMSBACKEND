@@ -1,6 +1,7 @@
 import express from "express";
 import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} from "../controllers/users";
-import { createBooking, deleteService, GetAllServiceCategory, getAllServices, getBookingById, getServiceById, postService, postServiceCategory, updateBooking, updateService } from "../controllers/service";
+import { createBooking, deleteBooked, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getAppoints, getBookingById, getServiceById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService } from "../controllers/service";
+import { getAllVehicle, postVehicle } from "../controllers/vehicle";
 
 const routes = express.Router();
 
@@ -26,6 +27,19 @@ routes.delete('/:id/service', deleteService);
 routes.post('/booking', createBooking);
 routes.get('/:id/booking', getBookingById);
 routes.patch("/:id/booking", updateBooking);
+routes.get('/bookings', getAllBookings);
+
+
+//appointment
+routes.patch("/:id/appointment", updateAppointment);
+routes.get("/appointments", getAppoints);
+routes.delete("/:id/appointment", deleteBooked)
+
+//VEHICLE ROUTES
+
+routes.post("/vehicle", postVehicle);
+routes.get("/vehicles", getAllVehicle);
+
 
 
 export default routes;

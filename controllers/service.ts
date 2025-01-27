@@ -69,7 +69,9 @@ export async function postServiceCategory(
       .status(201)
       .json({ message: "Category created successfully", data: category });
     return;
-  } catch (error) {}
+  } catch (error) {
+    next(error)
+  }
 }
 export async function GetAllServiceCategory(
   req: express.Request,
@@ -269,7 +271,7 @@ export async function createBooking(
     // Create the booking
     const booking = await prisma.bookingService.create({
       data: {
-        userId ,
+        userId,
         serviceId,
         categoryId,
         bookedDate: new Date(bookedDate),
@@ -285,7 +287,7 @@ export async function createBooking(
     next(error);
   }
 }
-
+//getting all bookings
 export async function getAllBookings(
   req: express.Request,
   res: express.Response
@@ -299,8 +301,9 @@ export async function getAllBookings(
       },
     });
 
-    if (!bookings.length) {
-      return res.status(404).json({ message: "No bookings found." });
+    if (bookings.length === 0) {
+      res.status(404).json({ message: "No bookings found." });
+      return;
     }
 
     res
@@ -310,7 +313,7 @@ export async function getAllBookings(
     console.error("Error fetching bookings:", error);
   }
 }
-
+//get bboking byid
 export async function getBookingById(
   req: express.Request,
   res: express.Response
@@ -328,8 +331,8 @@ export async function getBookingById(
     });
 
     if (!booking) {
-       res.status(404).json({ message: "Booking not found." });
-       return
+      res.status(404).json({ message: "Booking not found." });
+      return;
     }
 
     res
@@ -339,12 +342,13 @@ export async function getBookingById(
     console.error("Error fetching booking:", error);
   }
 }
-
+//update booking
 export async function updateBooking(
   req: express.Request,
   res: express.Response
 ) {
   try {
+    console.log(req.body, "the updated1;")
     const { id } = req.params;
     const { userId, serviceId, categoryId, bookedDate, description } = req.body;
 
@@ -399,5 +403,87 @@ export async function updateBooking(
   } catch (error) {
     console.error("Error updating booking:", error);
     res.status(500).json({ message: "Internal server error." });
+  }
+}
+
+///APPOINTMENT SERVICE
+//has no data this should be deleted it was replace by the serivesbboked
+export async function getAppoints(req: express.Request, res: express.Response){
+  try {
+    
+    const appoint = await prisma.appointment.findMany()
+    if(appoint.length === 0){
+      res.status(404).json({msg: "You have No appointents"});
+      return;
+    }
+    if(appoint){
+
+      res.status(200).json({data: appoint})
+    }
+    throw new Error('Something went wrng')
+  } catch (error) {
+    res.status(404).json({"Internal server error": error});
+    return
+  }
+}
+
+//update appointment 
+export async function updateAppointment(
+  req: express.Request,
+  res: express.Response
+) {
+  const { id } = req.params;
+  const { bookedDate, status } = req.body;
+
+  try {
+    // Validate input
+    if (!bookedDate || !status) {
+       res
+        .status(400)
+        .json({ message: "Please provide all required fields." });
+        return
+    }
+
+    // Update the appointment
+    const updatedAppointment = await prisma.bookingService.update({
+      where: { id: parseInt(id) },
+      data: {
+        bookedDate: new Date(bookedDate),
+        status,
+      },
+    });
+
+    res
+      .status(200)
+      .json({
+        message: "Appointment updated successfully.",
+        data: updatedAppointment,
+      });
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+}
+
+//delete bookedserves only admin
+export async function  deleteBooked( req: express.Request, res: express.Response, next: express.NextFunction){
+  const { id } = req.params;
+
+  try {
+    const serviceBooked = await prisma.bookingService.findUnique({
+      where:{ id : parseInt(id)}
+    })
+    if(!serviceBooked){
+      res.status(404).json({msg: `the id ${id} does not exist`})
+      return;
+    }
+    await prisma.bookingService.delete({
+      where:{id : parseInt(id)}
+    })
+  
+    res.status(201).json({msg: `Booked service id ${id} deleted seccessfully ${serviceBooked}` })
+    return;
+  } catch (error) {
+    res.status(500).json("Internal server error")
   }
 }

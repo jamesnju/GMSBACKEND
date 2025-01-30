@@ -14,6 +14,8 @@ export async function postVehicle(
       res.json({ msg: "All fileds required" });
       return;
     }
+
+    const yearInt = parseInt(year, 10);
     const exstingvehicle = await prisma.vehicle.findFirst({
       where: {
         licensePlate,
@@ -32,7 +34,7 @@ export async function postVehicle(
         //owner,
         make,
         model,
-        year,
+        year: yearInt,
       },
     });
     res.status(201).json({ msg: "success", data: car });

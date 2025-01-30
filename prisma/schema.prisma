@@ -95,7 +95,7 @@ model Vehicle {
   userId       Int
   make         String
   model        String
-  year         String
+  year         Int
   createdAt    DateTime @default(now())
   owner        User     @relation(fields: [userId], references: [id])
 }

@@ -103,7 +103,7 @@ export async function Login(
     });
     console.log(user, "user------------");
     if (!user) {
-      res.status(400).json({ msg: "Invalid email or password" });
+      res.status(404).json({ msg: "Invalid email or password" });
       return;
     }
     //verify password

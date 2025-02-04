@@ -1,7 +1,7 @@
 {
   "name": "gmsbackend",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "src/index.ts",
   "scripts": {
     "start": "nodemon",
     "postinstall": "prisma generate"

@@ -41,6 +41,7 @@ export async function getServiceById(
   }
 }
 
+//service category
 export async function postServiceCategory(
   req: express.Request,
   res: express.Response,
@@ -89,6 +90,33 @@ export async function GetAllServiceCategory(
     console.error("Error getting all categories:", error);
   }
 }
+export async function deleteCategoryService(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const { id } = req.params;
+    const category = await prisma.serviceCategory.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!category) {
+      res.status(404).json({ message: `Category id ${id} not found.` });
+      return;
+    }
+    await prisma.serviceCategory.delete({
+      where: { id: parseInt(id) },
+    });
+    res.status(200).json({ message: "Category deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+  }
+}
+
+
+//services
+
+
 
 export async function postService(
   req: express.Request,

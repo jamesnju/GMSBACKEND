@@ -1,6 +1,6 @@
 import express from "express";
 import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} from "../controllers/users";
-import { createBooking, deleteBooked, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getAppoints, getBookingById, getServiceById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService } from "../controllers/service";
+import { createBooking, deleteBooked, deleteCategoryService, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getAppoints, getBookingById, getServiceById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService } from "../controllers/service";
 import { getAllVehicle, postVehicle } from "../controllers/vehicle";
 
 const routes = express.Router();
@@ -13,13 +13,14 @@ routes.get('/:id/user', getSingleUser);
 routes.patch("/:id/user", updateUser);
 routes.delete("/:id/user", deleteUser);
 
-
+//service category
+routes.post('/serviceCategory', postServiceCategory);
+routes.get("/serviceCategory", GetAllServiceCategory);
+routes.delete("/:id/serviceCategory", deleteCategoryService);
 //serivces routes
 
 routes.get("/services", getAllServices);
 routes.post('/service', postService);
-routes.post('/serviceCategory', postServiceCategory);
-routes.get("/serviceCategory", GetAllServiceCategory);
 routes.get('/:id/service', getServiceById);
 routes.patch('/:id/service', updateService);
 routes.delete('/:id/service', deleteService);

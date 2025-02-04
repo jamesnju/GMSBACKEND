@@ -19,7 +19,7 @@ app.use(logger);
 app.use(express.json());
 
 //routes
-app.use("/api/v1/", routes);
+app.use("/api/v1", routes);
 
 app.use(errorHandler);
 

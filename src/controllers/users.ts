@@ -101,11 +101,12 @@ export async function Login(
     const user = await prisma.user.findUnique({
       where: { email },
     });
-    console.log(user, "user------------");
+    //console.log(user, "user------------");
     if (!user) {
       res.status(404).json({ msg: "Invalid email or password" });
       return;
     }
+    //console.log(user, "the user D")
     //verify password
     const isPasswordValid = await bcrypt.compare(password, user!.password!);
     if (!isPasswordValid) {
@@ -119,6 +120,7 @@ export async function Login(
       { expiresIn: "2h" }
     );
     res.status(200).json({ user, token });
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "internal server error" });
@@ -192,8 +194,8 @@ export async function deleteUser(
   next: express.NextFunction
 ) {
   const id = parseInt(req.params.id);
-  console.log(req.body);
-  console.log(id, "the id");
+  //console.log(req.body);
+  //console.log(id, "the id");
 
   try {
     const user = await prisma.user.findUnique({

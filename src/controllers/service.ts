@@ -71,7 +71,7 @@ export async function postServiceCategory(
       .json({ message: "Category created successfully", data: category });
     return;
   } catch (error) {
-    next(error)
+    next(error);
   }
 }
 export async function GetAllServiceCategory(
@@ -89,6 +89,61 @@ export async function GetAllServiceCategory(
   } catch (error) {
     console.error("Error getting all categories:", error);
   }
+}
+export async function getServiceCategoryById(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const { id } = req.params;
+    const category = await prisma.serviceCategory.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!category) {
+      res.status(404).json({ message: "Category not found." });
+      return;
+    }
+    res.status(200).json({ message: "Category found.", data: category });
+  } catch (error) {
+    console.error("Error getting category by ID:", error);
+  }
+}
+export async function updateServiceCategory(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    console.log(req.body, "the submited")
+    if (!name || !description) {
+      res.status(400).json({ msg: "Please fill all fields" });
+      return;
+    }
+    const categoryExist = await prisma.serviceCategory.findFirst({
+      where: { id: parseInt(id) },
+    });
+    if (!categoryExist) {
+      res.status(404).json({ msg: `Category id ${id} not found` });
+      return;
+    }
+    const updatedCategory = await prisma.serviceCategory.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        description,
+      },
+    });
+    console.log(updatedCategory, "the updated category");
+    res
+      .status(200)
+      .json({ msg: "Category updated successfully", data: updatedCategory });
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    res.status(500).json({ message: "Internal server error." });  }
+    return;
 }
 export async function deleteCategoryService(
   req: express.Request,
@@ -113,10 +168,7 @@ export async function deleteCategoryService(
   }
 }
 
-
 //services
-
-
 
 export async function postService(
   req: express.Request,
@@ -194,6 +246,7 @@ export async function updateService(
   try {
     const { id } = req.params;
     const { name, description, price, categoryId } = req.body;
+    console.log(req.body, "the service");
     if (!name || !description || !price || !categoryId) {
       res.status(400).json({ message: "Please fill all fields." });
       return;
@@ -235,8 +288,8 @@ export async function updateService(
       .status(200)
       .json({ message: "Service updated successfully.", data: updatedService });
   } catch (error) {
-    console.error("Error updating service:", error);
-  }
+    console.error("Error updating booking:", error);
+    res.status(500).json({ message: "Internal server error." });  }
 }
 export async function deleteService(
   req: express.Request,
@@ -268,7 +321,7 @@ export async function createBooking(
   res: express.Response,
   next: express.NextFunction
 ) {
-  console.log(req.body, "the res---------------------");
+  //console.log(req.body, "the res---------------------");
   try {
     const { userId, serviceId, categoryId, bookedDate, description } = req.body;
 
@@ -376,7 +429,7 @@ export async function updateBooking(
   res: express.Response
 ) {
   try {
-    console.log(req.body, "the updated1;")
+    console.log(req.body, "the updated1;");
     const { id } = req.params;
     const { userId, serviceId, categoryId, bookedDate, description } = req.body;
 
@@ -436,40 +489,38 @@ export async function updateBooking(
 
 ///APPOINTMENT SERVICE
 //has no data this should be deleted it was replace by the serivesbboked
-export async function getAppoints(req: express.Request, res: express.Response){
+export async function getAppoints(req: express.Request, res: express.Response) {
   try {
-    
-    const appoint = await prisma.appointment.findMany()
-    if(appoint.length === 0){
-      res.status(404).json({msg: "You have No appointents"});
+    const appoint = await prisma.appointment.findMany();
+    if (appoint.length === 0) {
+      res.status(404).json({ msg: "You have No appointents" });
       return;
     }
-    if(appoint){
-
-      res.status(200).json({data: appoint})
+    if (appoint) {
+      res.status(200).json({ data: appoint });
     }
-    throw new Error('Something went wrng')
+    throw new Error("Something went wrng");
   } catch (error) {
-    res.status(404).json({"Internal server error": error});
-    return
+    res.status(404).json({ "Internal server error": error });
+    return;
   }
 }
 
-//update appointment 
+//update appointment
 export async function updateAppointment(
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
+
 ) {
   const { id } = req.params;
   const { bookedDate, status } = req.body;
-
+  console.log(req.body, "the appioint update");
   try {
     // Validate input
     if (!bookedDate || !status) {
-       res
-        .status(400)
-        .json({ message: "Please provide all required fields." });
-        return
+      res.status(400).json({ message: "Please provide all required fields." });
+      return;
     }
 
     // Update the appointment
@@ -481,12 +532,10 @@ export async function updateAppointment(
       },
     });
 
-    res
-      .status(200)
-      .json({
-        message: "Appointment updated successfully.",
-        data: updatedAppointment,
-      });
+    res.status(200).json({
+      message: "Appointment updated successfully.",
+      data: updatedAppointment,
+    });
   } catch (error) {
     console.error("Error updating appointment:", error);
     res.status(500).json({ message: "Internal server error." });
@@ -494,24 +543,32 @@ export async function updateAppointment(
 }
 
 //delete bookedserves only admin
-export async function  deleteBooked( req: express.Request, res: express.Response, next: express.NextFunction){
+export async function deleteBooked(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
   const { id } = req.params;
 
   try {
     const serviceBooked = await prisma.bookingService.findUnique({
-      where:{ id : parseInt(id)}
-    })
-    if(!serviceBooked){
-      res.status(404).json({msg: `the id ${id} does not exist`})
+      where: { id: parseInt(id) },
+    });
+    if (!serviceBooked) {
+      res.status(404).json({ msg: `the id ${id} does not exist` });
       return;
     }
     await prisma.bookingService.delete({
-      where:{id : parseInt(id)}
-    })
-  
-    res.status(201).json({msg: `Booked service id ${id} deleted seccessfully ${serviceBooked}` })
+      where: { id: parseInt(id) },
+    });
+
+    res
+      .status(201)
+      .json({
+        msg: `Booked service id ${id} deleted seccessfully ${serviceBooked}`,
+      });
     return;
   } catch (error) {
-    res.status(500).json("Internal server error")
+    res.status(500).json("Internal server error");
   }
 }

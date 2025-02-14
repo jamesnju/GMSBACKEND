@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,32 +8,30 @@ datasource db {
 }
 
 model User {
-  id           Int              @id @default(autoincrement())
-  name         String
-  email        String           @unique
-  password     String
-  role         String           @default("customer")
-  createdAt    DateTime         @default(now())
-  vehicles     Vehicle[]
-  appointments Appointment[]
-  payments     Payment[]
-  reviews      Review[]
-  bookings     BookingService[] // Reverse relation to BookingService
-  adminLogs    AdminLog[]
+  id        Int              @id @default(autoincrement())
+  name      String
+  email     String           @unique
+  password  String
+  role      String           @default("customer")
+  createdAt DateTime         @default(now())
+  vehicles  Vehicle[]
+  bookings  BookingService[]
+  payments  Payment[]
+  reviews   Review[]
+  adminLogs AdminLog[]
 }
 
 model Service {
-  id           Int              @id @default(autoincrement())
-  name         String           @unique
-  description  String
-  price        Float
-  category     ServiceCategory  @relation(fields: [categoryId], references: [id])
-  categoryId   Int
-  bookings     BookingService[] // Reverse relation to BookingService
-  appointments Appointment[]    @relation("ServiceAppointment")
-  reviews      Review[]         @relation("ServiceReview")
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String
+  price       Float
+  category    ServiceCategory  @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  bookings    BookingService[]
+  reviews     Review[]         @relation("ServiceReview")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model ServiceCategory {
@@ -45,7 +40,7 @@ model ServiceCategory {
   description String
   services    Service[]
   createdAt   DateTime         @default(now())
-  bookings    BookingService[] // Reverse relation to BookingService
+  bookings    BookingService[]
 }
 
 model BookingService {
@@ -61,33 +56,28 @@ model BookingService {
   user        User            @relation(fields: [userId], references: [id])
   service     Service         @relation(fields: [serviceId], references: [id])
   category    ServiceCategory @relation(fields: [categoryId], references: [id])
-}
-
-model Appointment {
-  id              Int       @id @default(autoincrement())
-  userId          Int
-  serviceId       Int
-  bookedDate      DateTime
-  status          String    @default("pending")
-  createdAt       DateTime  @default(now())
-  user            User      @relation(fields: [userId], references: [id])
-  service         Service   @relation("ServiceAppointment", fields: [serviceId], references: [id])
-  payments        Payment[] @relation("AppointmentPayment")
+  Payment     Payment[]
 }
 
 model Payment {
-  id            Int                  @id @default(autoincrement())
-  userId        Int
-  appointmentId Int
-  amount        Float
-  paymentMethod String
-  paymentStatus String               @default("pending")
-  paymentDate   DateTime
-  createdAt     DateTime             @default(now())
-  user          User                 @relation(fields: [userId], references: [id])
-  appointment   Appointment          @relation("AppointmentPayment", fields: [appointmentId], references: [id])
-  transactions  PaymentTransaction[]
+  id               Int                  @id @default(autoincrement())
+  userId           Int
+  bookingServiceId Int
+  amount           Float
+  paymentMethod    String               @default("MPESA") // Default to M-Pesa
+  paymentStatus    String               @default("pending") // pending, completed, failed
+  paymentDate      DateTime
+  createdAt        DateTime             @default(now())
+  
+  // M-Pesa Specific Fields
+  transactionId    String?               // M-Pesa Transaction ID (NULL if not completed)
+  merchantRequestId String?             // Merchant Request ID for tracking
+  mpesaReceipt     String?               // M-Pesa receipt number
+  user             User                 @relation(fields: [userId], references: [id])
+  bookingService   BookingService       @relation(fields: [bookingServiceId], references: [id])
+  transactions     PaymentTransaction[]
 }
+
 
 model Vehicle {
   id           Int      @id @default(autoincrement())

@@ -489,22 +489,22 @@ export async function updateBooking(
 
 ///APPOINTMENT SERVICE
 //has no data this should be deleted it was replace by the serivesbboked
-export async function getAppoints(req: express.Request, res: express.Response) {
-  try {
-    const appoint = await prisma.appointment.findMany();
-    if (appoint.length === 0) {
-      res.status(404).json({ msg: "You have No appointents" });
-      return;
-    }
-    if (appoint) {
-      res.status(200).json({ data: appoint });
-    }
-    throw new Error("Something went wrng");
-  } catch (error) {
-    res.status(404).json({ "Internal server error": error });
-    return;
-  }
-}
+// export async function getAppoints(req: express.Request, res: express.Response) {
+//   try {
+//     const appoint = await prisma.appointment.findMany();
+//     if (appoint.length === 0) {
+//       res.status(404).json({ msg: "You have No appointents" });
+//       return;
+//     }
+//     if (appoint) {
+//       res.status(200).json({ data: appoint });
+//     }
+//     throw new Error("Something went wrng");
+//   } catch (error) {
+//     res.status(404).json({ "Internal server error": error });
+//     return;
+//   }
+// }
 
 //update appointment
 export async function updateAppointment(

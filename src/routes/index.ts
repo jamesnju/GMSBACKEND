@@ -1,7 +1,9 @@
 import express from "express";
 import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} from "../controllers/users";
-import { createBooking, deleteBooked, deleteCategoryService, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getAppoints, getBookingById, getServiceById, getServiceCategoryById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService, updateServiceCategory } from "../controllers/service";
+import { createBooking, deleteBooked, deleteCategoryService, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getBookingById, getServiceById, getServiceCategoryById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService, updateServiceCategory } from "../controllers/service";
 import { getAllVehicle, postVehicle } from "../controllers/vehicle";
+import { createPayment, getAllPayments } from "../controllers/payments";
+import payMpesa from "../controllers/mpesa";
 
 const routes = express.Router();
 
@@ -33,9 +35,9 @@ routes.patch("/:id/booking", updateBooking);
 routes.get('/bookings', getAllBookings);
 
 
-//appointment
+//appointment i used the booking service table
 routes.patch("/:id/appointment", updateAppointment);
-routes.get("/appointments", getAppoints);
+//routes.get("/appointments", getAppoints);
 routes.delete("/:id/appointment", deleteBooked)
 
 //VEHICLE ROUTES
@@ -43,6 +45,13 @@ routes.delete("/:id/appointment", deleteBooked)
 routes.post("/vehicle", postVehicle);
 routes.get("/vehicles", getAllVehicle);
 
+//payments stripe
+routes.post("/payments", createPayment);
+// routes.post("/verifystripewebhk", stripeWebhook);
+routes.get("/payments", getAllPayments);
 
+//mpesa
+routes.post("/mpesa", payMpesa);
+//routes.post("/mpesawebhook", mpesaWebhook);
 
 export default routes;

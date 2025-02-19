@@ -53,7 +53,7 @@ export async function postUser(
 ) {
   try {
     const { name, password, email } = req.body;
-    console.log(req.body)
+    //console.log(req.body)
 
     if (!name || !email || !password) {
       const error = new Error("Fill all fields");
@@ -95,7 +95,7 @@ export async function Login(
 ) {
   const { email, password } = req.body;
   //   console.log(req.body);
-  //   console.log(email, password);
+    console.log(email, password);
 
   try {
     const user = await prisma.user.findUnique({
@@ -103,14 +103,14 @@ export async function Login(
     });
     //console.log(user, "user------------");
     if (!user) {
-      res.status(404).json({ msg: "Invalid email or password" });
+      res.status(404).json({ msg: "User doesnt exist" });
       return;
     }
     //console.log(user, "the user D")
     //verify password
     const isPasswordValid = await bcrypt.compare(password, user!.password!);
     if (!isPasswordValid) {
-      res.status(400).json({ msg: "Invalid email or password" });
+      res.status(400).json({ msg: "Invalid password" });
       return;
     }
     //generate jwt token

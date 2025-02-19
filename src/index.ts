@@ -10,7 +10,7 @@ import { mpesaWebhook } from "./controllers/mpesa";
 
 
 const app = express();
-const PORT = 7000;
+const PORT = 8000;
 
 dotenv.config()
 app.use(cors());  // Enable CORS for all routes

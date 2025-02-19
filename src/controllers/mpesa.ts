@@ -55,7 +55,6 @@ export default async function payMpesa(req: express.Request, res: express.Respon
         },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      
     // Store payment request in database
     const payment = await prisma.payment.create({
       data: {

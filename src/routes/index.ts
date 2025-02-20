@@ -3,7 +3,7 @@ import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} fr
 import { createBooking, deleteBooked, deleteCategoryService, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getBookingById, getServiceById, getServiceCategoryById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService, updateServiceCategory } from "../controllers/service";
 import { getAllVehicle, postVehicle } from "../controllers/vehicle";
 import { createPayment, getAllPayments } from "../controllers/payments";
-import payMpesa from "../controllers/mpesa";
+import {mpesaWebhook, payMpesa} from "../controllers/mpesa";
 
 const routes = express.Router();
 
@@ -52,6 +52,6 @@ routes.get("/payments", getAllPayments);
 
 //mpesa
 routes.post("/mpesa", payMpesa);
-//routes.post("/mpesawebhook", mpesaWebhook);
+routes.post("/mpesawebhook", mpesaWebhook);
 
 export default routes;

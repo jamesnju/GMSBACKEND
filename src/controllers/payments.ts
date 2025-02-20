@@ -57,7 +57,7 @@ export const createPayment = async (
         bookingServiceId,
         amount,
         paymentMethod: "card",
-        paymentStatus: "completed", // Initially "pending", updated via webhook
+        paymentStatus: "pending..", // Initially "pending", updated via webhook
         paymentDate: new Date(),
       },
     });

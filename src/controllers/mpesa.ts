@@ -4,7 +4,7 @@ import axios from "axios";
 import moment from "moment";
 
 
-export default async function payMpesa(req: express.Request, res: express.Response) {
+export async function payMpesa(req: express.Request, res: express.Response) {
   if (req.method !== "POST") {
      res.status(405).json({ error: "Method not allowed" });
      return;
@@ -12,7 +12,7 @@ export default async function payMpesa(req: express.Request, res: express.Respon
 
   try {
     const { userId, phoneNumber, amount, bookingServiceId } = req.body;
-
+console.log(req.body, "payments")
     if (!userId || !phoneNumber || !amount ) {
        res.status(400).json({ error: "Missing required fields" });
        return;
@@ -37,6 +37,8 @@ export default async function payMpesa(req: express.Request, res: express.Respon
         CheckoutRequestID: string;
         // Add other properties that the response may contain
       }
+try {
+  console.log("Sending STK Push request...................................");
 
     const stkPushResponse = await axios.post<StkPushResponse>(
         "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
@@ -55,6 +57,9 @@ export default async function payMpesa(req: express.Request, res: express.Respon
         },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+      console.log("Callback URL:", process.env.MPESA_CALLBACK_URL);
+      console.log("STK Push Response:", stkPushResponse.data);
+
     // Store payment request in database
     const payment = await prisma.payment.create({
       data: {
@@ -62,7 +67,7 @@ export default async function payMpesa(req: express.Request, res: express.Respon
         bookingServiceId,
         amount,
         paymentMethod: "M-Pesa",
-        paymentStatus: "completed",
+        paymentStatus: "Initiated",
         paymentDate: new Date(),
         transactionId: stkPushResponse.data.CheckoutRequestID, // Store STK push request ID
       },
@@ -70,6 +75,11 @@ export default async function payMpesa(req: express.Request, res: express.Respon
 
      res.status(200).json({ success: true, payment });
      return;
+    }catch (error:any) {
+      console.error("Error in STK Push:", error.response?.data || error.message);
+       res.status(500).json({ error: "STK Push request failed" });
+       return;
+    }
   } catch (error) {
     console.error("M-Pesa payment error:", error);
      res.status(500).json({ error: "Internal server error" });
@@ -78,46 +88,61 @@ export default async function payMpesa(req: express.Request, res: express.Respon
 }
 
 
-export async function mpesaWebhook(req: express.Request, res: express.Response) {
-  console.log("Headers:", req.headers);
-  console.log("Raw Body:", req.body);
+export async function mpesaWebhook(
+  req: express.Request,
+  res: express.Response
+) {
+  console.log("Webhook hit!", req.method, req.body); // Log request method and body
 
   if (req.method !== "POST") {
-      res.status(405).json({ error: "Method not allowed" });
-      return;
+     res.status(405).json({ error: "Method not allowed" });
+     return;
   }
 
   try {
-      if (!req.body || !req.body.Body) {
-          console.error("Invalid Request Body:", req.body);
-          res.status(400).json({ error: "Invalid request payload" });
-          return;
-      }
+    const { Body } = req.body;
 
-      const { Body } = req.body;
-      if (!Body.stkCallback) {
-          res.status(400).json({ error: "Missing stkCallback" });
-          return;
-      }
+    if (!Body || !Body.stkCallback) {
+       res.status(400).json({ error: "Invalid callback payload" });
+       return;
+    }
 
-      const { MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = Body.stkCallback;
+    const { MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } =
+      Body.stkCallback;
 
-      if (ResultCode !== 0) {
-          console.error(`Payment failed: ${ResultDesc}`);
-          res.status(200).json({ message: "Payment failed", ResultDesc });
-          return;
-      }
+    console.log("M-Pesa Callback received:", Body.stkCallback);
 
+    // Check if the transaction was successful
+    if (ResultCode === 0) {
       const amount = CallbackMetadata.Item.find((item: any) => item.Name === "Amount")?.Value;
-      const mpesaReceiptNumber = CallbackMetadata.Item.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
-      const transactionDate = CallbackMetadata.Item.find((item: any) => item.Name === "TransactionDate")?.Value;
-      const phoneNumber = CallbackMetadata.Item.find((item: any) => item.Name === "PhoneNumber")?.Value;
+      const transactionId = CallbackMetadata.Item.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
 
-      console.log("Extracted Payment Data:", { amount, mpesaReceiptNumber, transactionDate, phoneNumber });
+      // Update the database
+      await prisma.payment.updateMany({
+        where: { transactionId: CheckoutRequestID },
+        data: {
+          paymentStatus: "completed",
+          transactionId: transactionId, // Store Mpesa transaction ID
+        },
+      });
 
-      res.status(200).json({ success: true });
+      console.log("Payment completed successfully:", transactionId);
+    } else {
+      // If the payment failed, update the status
+      await prisma.payment.updateMany({
+        where: { transactionId: CheckoutRequestID },
+        data: { paymentStatus: "failed" },
+      });
+
+      console.log("Payment failed:", ResultDesc);
+    }
+
+     res.status(200).json({ message: "Callback received successfully" });
+     return;
   } catch (error) {
-      console.error("M-Pesa Webhook error:", error);
-      res.status(500).json({ error: "Internal server error" });
+    console.error("Error handling M-Pesa callback:", error);
+     res.status(500).json({ error: "Internal server error" });
+     return;
   }
 }
+

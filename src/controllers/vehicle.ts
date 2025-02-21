@@ -63,3 +63,54 @@ export async function getAllVehicle(
     next(error);
   }
 }
+export async function updateVehicle(req: express.Request, res: express.Response) {
+  try {
+    const { licensePlate, make, model, year, userId } = req.body;
+  const { id } = req.params;
+  const yearInt = parseInt(year, 10);
+  const exstingvehicle = await prisma.vehicle.findFirst({
+    where: {
+      licensePlate,
+    },
+  });
+  if (exstingvehicle) {
+    res
+      .status(401)
+      .json({ msg: `Vehicle lincenselate ${licensePlate} exists` });
+    return;
+  }
+  const car = await prisma.vehicle.update({
+    where: {
+      id: parseInt(id),
+    },
+    data: {
+      licensePlate,
+      userId,
+      //owner,
+      make,
+      model,
+      year: yearInt,
+    },
+  });
+  res.status(201).json({ msg: "success", data: car });
+  return;
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error" });
+    
+  }
+  
+}
+export async function deleteVehicle(req: express.Request, res: express.Response) {
+  try {
+    const { id } = req.params;
+    const vehicle = await prisma.vehicle.delete({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    res.status(200).json({ msg: "success", data: vehicle });
+    return;
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error" });
+  }
+}

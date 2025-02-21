@@ -1,9 +1,10 @@
 import express from "express";
 import { deleteUser, getAllUsers, getSingleUser, Login, postUser, updateUser} from "../controllers/users";
 import { createBooking, deleteBooked, deleteCategoryService, deleteService, getAllBookings, GetAllServiceCategory, getAllServices, getBookingById, getServiceById, getServiceCategoryById, postService, postServiceCategory,  updateAppointment,  updateBooking, updateService, updateServiceCategory } from "../controllers/service";
-import { getAllVehicle, postVehicle } from "../controllers/vehicle";
+import { deleteVehicle, getAllVehicle, postVehicle, updateVehicle } from "../controllers/vehicle";
 import { createPayment, getAllPayments } from "../controllers/payments";
 import {mpesaWebhook, payMpesa} from "../controllers/mpesa";
+import { systemReport } from "../controllers/report";
 
 const routes = express.Router();
 
@@ -41,9 +42,10 @@ routes.patch("/:id/appointment", updateAppointment);
 routes.delete("/:id/appointment", deleteBooked)
 
 //VEHICLE ROUTES
-
 routes.post("/vehicle", postVehicle);
 routes.get("/vehicles", getAllVehicle);
+routes.patch("/:id/vehicle", updateVehicle);
+routes.delete("/:id/vehicle", deleteVehicle);
 
 //payments stripe
 routes.post("/payments", createPayment);
@@ -53,5 +55,8 @@ routes.get("/payments", getAllPayments);
 //mpesa
 routes.post("/mpesa", payMpesa);
 routes.post("/mpesawebhook", mpesaWebhook);
+
+//report
+routes.get("/report", systemReport);
 
 export default routes;

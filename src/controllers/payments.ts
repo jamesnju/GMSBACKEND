@@ -49,7 +49,6 @@ export const createPayment = async (
       },
       metadata: { userId, bookingServiceId },
     });
-
     // Store the payment record in the database
     const payment = await prisma.payment.create({
       data: {
@@ -83,7 +82,30 @@ export const createPayment = async (
   export const getAllPayments = async (req: express.Request, res: express.Response) => {
     if (req.method === "GET") {
       try {
-        const payments = await prisma.payment.findMany();
+        const payments = await prisma.payment.findMany({
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true, // Only selecting specific fields, excluding password
+                role: true,
+              },
+            },
+            bookingService: {
+              select: {
+                bookedDate: true,
+                service: {
+                  select: {
+                    name: true,
+                    description: true,
+                    price: true,
+                  },
+                }
+              }
+            }, // Include booking service details
+          },
+        });
         res.status(200).json({ payments });
       } catch (error) {
         console.error(error);

@@ -280,6 +280,7 @@ export async function updateService(
       data: {
         name,
         description,
+        //status,
         price: parseFloat(price),
         categoryId: parseInt(categoryId, 10),
       },
@@ -379,6 +380,8 @@ export async function getAllBookings(
         service: true,
         category: true,
         user: true,
+        Payment: true,
+
       },
     });
 
@@ -431,7 +434,7 @@ export async function updateBooking(
   try {
     console.log(req.body, "the updated1;");
     const { id } = req.params;
-    const { userId, serviceId, categoryId, bookedDate, description } = req.body;
+    const { userId, serviceId, categoryId, bookedDate, description, status } = req.body;
 
     // Validate input
     if (!userId || !serviceId || !categoryId || !bookedDate) {
@@ -473,6 +476,7 @@ export async function updateBooking(
         userId,
         serviceId,
         categoryId,
+        status,
         bookedDate: new Date(bookedDate),
         description,
       },

@@ -66,6 +66,7 @@ export async function getAllVehicle(
 export async function updateVehicle(req: express.Request, res: express.Response) {
   try {
     const { licensePlate, make, model, year, userId } = req.body;
+    console.log(req.body);
   const { id } = req.params;
   const yearInt = parseInt(year, 10);
   const exstingvehicle = await prisma.vehicle.findFirst({

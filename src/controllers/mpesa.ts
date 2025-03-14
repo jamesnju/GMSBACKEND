@@ -131,7 +131,11 @@ export async function mpesaWebhook(
       // If the payment failed, update the status
       await prisma.payment.updateMany({
         where: { transactionId: CheckoutRequestID },
-        data: { paymentStatus: "failed" },
+        data: { 
+          paymentStatus: "failed",
+          rejectionReason: ResultDesc, 
+
+        },
       });
 
       console.log("Payment failed:", ResultDesc);

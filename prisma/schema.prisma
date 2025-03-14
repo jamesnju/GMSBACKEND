@@ -70,6 +70,7 @@ model Payment {
   createdAt        DateTime             @default(now())
   
   // M-Pesa Specific Fields
+  rejectionReason  String?
   transactionId    String?               // M-Pesa Transaction ID (NULL if not completed)
   merchantRequestId String?             // Merchant Request ID for tracking
   mpesaReceipt     String?               // M-Pesa receipt number
